@@ -7,7 +7,7 @@ import {SanctionedToken} from "../src/ERC20Sanction.sol";
 contract SanctionedTokenTest is Test {
     // Variables
     SanctionedToken public token;
-    address supplyOwnerAddress = makeAddr("BerachainWalletUser"); // 0xE3284cB941608AA9E65F7EDdbb50c461D936622f
+    address supplyOwnerAddress = makeAddr("MainWallet"); // 0x17F90ff1027Cd2d99e43821a86E35F8063E11d8c
     address randomWalletAddress = makeAddr("GiveMeTokens"); // 0x187A660c372Fa04D09C1A71f2927911e62e98a89
     address anotherWalletAddress = makeAddr("AnotherAddress"); // 0x0F3B9cC98eef350B12D5b7a338D8B76c2F9a92CC
     error ERC20InvalidReceiver(address receiver);
@@ -18,6 +18,7 @@ contract SanctionedTokenTest is Test {
      * @dev Initial contract setup
      */
     function setUp() public {
+        //vm.prank sets msg.sender to the specified address for the next call
         vm.prank(supplyOwnerAddress);
         token = new SanctionedToken();
     }
@@ -110,7 +111,7 @@ contract SanctionedTokenTest is Test {
         vm.prank(supplyOwnerAddress);
         assertEq(token.transfer(randomWalletAddress, 100), true);
         assertEq(token.balanceOf(randomWalletAddress), 100);
-        assertEq(token.balanceOf(supplyOwnerAddress), 10000 - 100);
+        assertEq(token.balanceOf(supplyOwnerAddress), 1000 - 100);
     }
 
     /**
@@ -219,10 +220,41 @@ contract SanctionedTokenTest is Test {
             true
         );
         assertEq(token.balanceOf(anotherWalletAddress), 10);
-        assertEq(token.balanceOf(supplyOwnerAddress), 10000 - 10);
+        assertEq(token.balanceOf(supplyOwnerAddress), 1000 - 10);
         assertEq(
             token.allowance(supplyOwnerAddress, randomWalletAddress),
             30 - 10
         );
+    }
+    /**
+     * @dev Test transfer to a sanctioned address
+     */
+    function test_TransferToASanctionedAddress() public {
+        // Setup
+        vm.prank(supplyOwnerAddress);
+        token.approve(supplyOwnerAddress, 30);
+        vm.prank(supplyOwnerAddress);
+        token.addAddressToBlacklist(anotherWalletAddress);
+
+        // Test
+        vm.prank(supplyOwnerAddress);
+        vm.expectRevert("Cannot transfer to or from a blacklisted address");
+        token.transferFrom(supplyOwnerAddress, anotherWalletAddress, 10);
+    }
+
+    /**
+     * @dev Test transfer from a sanctioned address
+     */
+    function test_TransferFromASanctionedAddress() public {
+        // Setup
+        vm.prank(supplyOwnerAddress);
+        token.approve(supplyOwnerAddress, 30);
+        vm.prank(supplyOwnerAddress);
+        token.addAddressToBlacklist(supplyOwnerAddress);
+
+        // Test
+        vm.prank(supplyOwnerAddress);
+        vm.expectRevert("Cannot transfer to or from a blacklisted address");
+        token.transferFrom(supplyOwnerAddress, anotherWalletAddress, 10);
     }
 }
