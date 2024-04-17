@@ -83,7 +83,14 @@ contract LinearBondingCurve is IBondingCurve, Pausable, Ownable2Step {
         uint32 _reserveRatio,
         uint256 _sellAmount
     ) external override returns (uint256) {
-        require(_supply > 0 && _reserveBalance > 0 && _reserveRatio > 0 && _reserveRatio <= MAX_RESERVE_RATIO && _sellAmount <= _supply, "Invalid input");
+        require(
+            _supply > 0 &&
+                _reserveBalance > 0 &&
+                _reserveRatio > 0 &&
+                _reserveRatio <= MAX_RESERVE_RATIO &&
+                _sellAmount <= _supply,
+            "Invalid input"
+        );
 
         if (_sellAmount == 0) {
             return 0;
@@ -94,11 +101,14 @@ contract LinearBondingCurve is IBondingCurve, Pausable, Ownable2Step {
         }
 
         if (_reserveRatio == MAX_RESERVE_RATIO) {
-            return _reserveBalance * _sellAmount / _supply;
+            return (_reserveBalance * _sellAmount) / _supply;
         }
 
-        uint256 result = _reserveBalance * (1 - ((_supply - _sellAmount) ** MAX_RESERVE_RATIO / _supply ** MAX_RESERVE_RATIO) ** (MAX_RESERVE_RATIO / _reserveRatio));
+        uint256 result = _reserveBalance *
+            (1 -
+                ((_supply - _sellAmount) ** MAX_RESERVE_RATIO /
+                    _supply ** MAX_RESERVE_RATIO) **
+                    (MAX_RESERVE_RATIO / _reserveRatio));
         return result;
-    }
     }
 }
