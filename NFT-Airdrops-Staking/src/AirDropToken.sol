@@ -15,7 +15,7 @@ contract AirDropToken is ERC20 {
         merkleRoot = _merkleRoot;
     }
 
-    function claimAirdrop(
+    function claimAirDrop(
         bytes32[] calldata proof,
         uint256 index,
         uint256 amount
