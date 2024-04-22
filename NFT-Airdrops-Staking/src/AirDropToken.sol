@@ -23,7 +23,7 @@ contract AirDropToken is ERC20 {
         //check if address has already claimed
         require(
             !BitMaps.get(_airdropList, index),
-            "Adress has already claimed"
+            "Address has already claimed"
         );
 
         // verify proof

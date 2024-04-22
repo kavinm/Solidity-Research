@@ -8,7 +8,7 @@ import "../src/KavinNFT.sol";
 contract KavinNFTTest is Test {
     KavinNFT public nft;
     bytes32 merkleRoot =
-        0xa363ce445148603408e6b99e5f58271a80b194bfce04d7270672f0ac98e086f5;
+        0x90edfb54b4785739d76cbd6f9468ba893e0faeb6c79590ab4cee350d6b5fde2d;
     address public alice = address(0x1);
     address public bob = address(0x2);
 
@@ -63,5 +63,59 @@ contract KavinNFTTest is Test {
         (address receiver, uint256 royaltyAmount) = nft.royaltyInfo(1, 1e18);
         assertEq(receiver, alice);
         assertEq(royaltyAmount, 2.5e16);
+    }
+
+    /**
+     * @dev Test whitelist Mint
+     */
+    function test_whiteListMint() public {
+        bytes32[] memory proof = new bytes32[](2);
+        proof[
+            0
+        ] = 0x2fc7941cecc943bf2000c5d7068f2b8c8e9a29be62acd583fe9e6e90489a8c82;
+        proof[
+            1
+        ] = 0x9feccf6caa602894c8105bdda7f81b2a7bb7de7dba1f18af92d8d057b708cb41;
+        vm.prank(alice);
+        nft.whiteListMint(alice, proof, 0);
+        assertEq(nft.balanceOf(alice), 1);
+    }
+
+    /**
+     * @dev  should revert if the same user mints tries to whitelist mint twice
+     */
+    function test_whiteListMintOnlyOnce() public {
+        bytes32[] memory proof = new bytes32[](2);
+        proof[
+            0
+        ] = 0x2fc7941cecc943bf2000c5d7068f2b8c8e9a29be62acd583fe9e6e90489a8c82;
+        proof[
+            1
+        ] = 0x9feccf6caa602894c8105bdda7f81b2a7bb7de7dba1f18af92d8d057b708cb41;
+        vm.prank(alice);
+        nft.whiteListMint(alice, proof, 0);
+        assertEq(nft.balanceOf(alice), 1);
+
+        vm.prank(alice);
+        vm.expectRevert();
+        nft.whiteListMint(alice, proof, 0);
+        assertEq(nft.balanceOf(alice), 1);
+    }
+
+    /**
+     * @dev  should revert if a non whitelisted user tries to mint
+     */
+    function test_whiteListMintRevert() public {
+        bytes32[] memory proof = new bytes32[](2);
+        proof[
+            0
+        ] = 0x2fc7941cecc943bf2000c5d7068f2b8c8e9a29be62acd583fe9e6e90489a8c82;
+        proof[
+            1
+        ] = 0x9feccf6caa602894c8105bdda7f81b2a7bb7de7dba1f18af92d8d057b708cb41;
+
+        vm.expectRevert();
+        nft.whiteListMint(msg.sender, proof, 0);
+        assertEq(nft.balanceOf(msg.sender), 0);
     }
 }
