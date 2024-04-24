@@ -118,4 +118,31 @@ contract KavinNFTTest is Test {
         nft.whiteListMint(msg.sender, proof, 0);
         assertEq(nft.balanceOf(msg.sender), 0);
     }
+
+    /**
+     * @dev deployer can withdraw nft sale funds
+     */
+    function test_withdrawFunds() public {
+        for (uint256 i = 0; i < 1000; i++) {
+            nft.safeMint{value: 100 gwei}(msg.sender);
+        }
+        assertEq(alice.balance, 0);
+        vm.prank(alice);
+        nft.withdrawFunds(alice);
+        //100000000000000
+        assertEq(alice.balance, 100000 gwei);
+    }
+
+    /**
+     * @dev no one else can withdraw
+     */
+    function test_revertWithdrawFunds() public {
+        for (uint256 i = 0; i < 1000; i++) {
+            nft.safeMint{value: 100 gwei}(msg.sender);
+        }
+        assertEq(alice.balance, 0);
+        vm.expectRevert();
+        nft.withdrawFunds(alice);
+        //100000000000000
+    }
 }
