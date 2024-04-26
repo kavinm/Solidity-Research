@@ -24,6 +24,8 @@ contract KavinNFT is ERC721, ERC721Enumerable, ERC721Royalty, Ownable2Step {
     uint96 constant ROYALTY = 250;
     // mint price
     uint256 constant MINT_PRICE = 100 gwei;
+    // max supply
+    uint256 constant MAX_SUPPLY = 1000;
 
     constructor(
         bytes32 _merkleRoot
@@ -43,7 +45,7 @@ contract KavinNFT is ERC721, ERC721Enumerable, ERC721Royalty, Ownable2Step {
 
     function safeMint(address to) public payable {
         //Supply of 1000
-        require(totalSupply() < 1000, "Tokens have been minted out");
+        require(totalSupply() < MAX_SUPPLY, "Tokens have been minted out");
         //cost of 100 gwei
         require(msg.value >= MINT_PRICE);
         uint256 tokenId = _nextTokenId++;
@@ -61,7 +63,7 @@ contract KavinNFT is ERC721, ERC721Enumerable, ERC721Royalty, Ownable2Step {
         uint256 index
     ) public payable {
         //Supply of 1000
-        require(totalSupply() < 1000, "Tokens have been minted out");
+        require(totalSupply() < MAX_SUPPLY, "Tokens have been minted out");
 
         //check to see user has only whitelist minted once
         require(
